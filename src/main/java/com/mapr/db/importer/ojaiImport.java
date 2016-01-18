@@ -19,48 +19,47 @@ import com.fasterxml.jackson.core.JsonToken;
 
 public class ojaiImport {
 
-   private static final Logger log = Logger.getLogger(ojaiImport.class.getName());
-   private String[] args = null;
-   private Options options = new Options();
+    private static final Logger log = Logger.getLogger(ojaiImport.class.getName());
+    private String[] args = null;
+    private Options options = new Options();
 
-    public static void main( String[] args )
-    {
+    public static void main( String[] args ) {
         CommandLineParser parser = new BasicParser();
-	CommandLine line = null;
+        CommandLine line = null;
 
         ojaiImport i = new ojaiImport(parser, line, args);
     }
 
     public ojaiImport(CommandLineParser parser, CommandLine line, String[] args) {
 
-	try {
-	    line = parser.parse(createOptions(), args);
+        try {
+            line = parser.parse(createOptions(), args);
         } catch (ParseException exp ) {
-	    System.out.println( "Unexpected exception:" + exp.getMessage() );
-	}
-
-	if (line.hasOption("help")) {
-	    HelpFormatter formatter = new HelpFormatter();
-	    formatter.printHelp("ojaiimport", options);
-	    System.exit(0);
-        }
-	if (line.hasOption("file")) {
-	    System.out.println("Input file: " + line.getOptionValue("file"));
-        }
-	if (line.hasOption("key")) {
-	    System.out.println("'_id' Element: " + line.getOptionValue("key"));
+            System.out.println( "Unexpected exception:" + exp.getMessage() );
         }
 
-	streamParser p = new streamParser(line);
-	System.exit(0);
+        if (line.hasOption("help")) {
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp("ojaiimport", options);
+            System.exit(0);
+        }
+        if (line.hasOption("file")) {
+            System.out.println("Input file: " + line.getOptionValue("file"));
+        }
+        if (line.hasOption("key")) {
+            System.out.println("'_id' Element: " + line.getOptionValue("key"));
+        }
+
+        streamParser p = new streamParser(line);
+        System.exit(0);
     }
 
     private Options createOptions() {
-	options.addOption( "f", "file", true, "Use this file as input instead of standard in" );
- 	options.addOption( "k", "key", true, "JSON element to use as the '_id' (rowkey)" );
- 	options.addOption( "h", "help", false, "This message" );
+        options.addOption( "f", "file", true, "Use this file as input instead of standard in" );
+        options.addOption( "k", "key", true, "JSON element to use as the '_id' (rowkey)" );
+        options.addOption( "h", "help", false, "This message" );
 
-	return options;
+        return options;
     }
 
 }

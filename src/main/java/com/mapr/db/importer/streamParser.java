@@ -17,9 +17,13 @@ public class streamParser {
         try {
 
             JsonFactory jfactory = new JsonFactory();
+            JsonParser jParser = null;
 
-            /*** read from file ***/
-            JsonParser jParser = jfactory.createJsonParser(new File("c:\\user.json"));
+            if (line.hasOption("f")) {
+                jParser = jfactory.createJsonParser(new File(line.getOptionValue("file")));
+            } else {
+                jParser = jfactory.createJsonParser(System.in);
+            }
 
             // loop until token equal to "}"
             while (jParser.nextToken() != JsonToken.END_OBJECT) {
@@ -61,17 +65,11 @@ public class streamParser {
             jParser.close();
 
         } catch (JsonGenerationException e) {
-
             e.printStackTrace();
-
         } catch (JsonMappingException e) {
-
             e.printStackTrace();
-
         } catch (IOException e) {
-
             e.printStackTrace();
-
         }
 
     }
