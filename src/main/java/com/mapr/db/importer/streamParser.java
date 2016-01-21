@@ -11,6 +11,7 @@ import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.mapr.db.MapRDB;
+import com.mapr.db.Table;
 
 public class streamParser {
 
@@ -28,6 +29,17 @@ public class streamParser {
                 jParser = jfactory.createJsonParser(System.in);
             }
 
+            String idElement = null;
+            String idValue = null;
+
+            if (line.hasOption("key"))
+                idElement = line.getOptionValue("key");
+
+            String[] remainingArguments = line.getArgs();
+            if (remainingArguments.length != 1) {
+                throw new IOException("table name not provided or too many table arguments");
+            }
+            Table table = MapRDB.getTable(remainingArguments[0]); // get the table
             DocumentBuilder b = MapRDB.newDocumentBuilder();
             //boolean inArray = false;
 
@@ -48,6 +60,11 @@ public class streamParser {
 // At this point, we can call insert() or insertandreplace()
                     if (depth == 0) {
                         System.out.println(b.getDocument().asJsonString());
+                        if (idElement != null)
+                            table.insert(idValue, b.getDocument());
+                        else
+                            table.insert(b.getDocument());
+
                     }
                     break;
                 case START_ARRAY:
@@ -83,7 +100,7 @@ public class streamParser {
                     }
                     break;
                 case VALUE_NUMBER_FLOAT:
-                  if (fieldName != null) {
+                    if (fieldName != null) {
                         b.put(fieldName, jParser.getDoubleValue());
                     } else {
                         b.add(jParser.getDoubleValue());
@@ -98,6 +115,8 @@ public class streamParser {
                     break;
                 case VALUE_STRING:
                     if (fieldName != null) {
+                        if (fieldName.equals(idElement))
+                            idValue = jParser.getText();
                         b.put(fieldName, jParser.getText());
                     } else {
                         b.add(jParser.getText());
@@ -112,7 +131,7 @@ public class streamParser {
                     }
                     break;
                 }
-//              System.out.println("["+depth+"]   " + jParser.getCurrentToken().toString() + ": "+ fieldName); // display mkyong
+                System.out.println("["+depth+"]   " + jParser.getCurrentToken().toString() + ": "+ fieldName); // display mkyong
 
             }
             jParser.close();

@@ -32,7 +32,7 @@ public class ojaiImport {
 
         if (line.hasOption("help")) {
             HelpFormatter formatter = new HelpFormatter();
-            formatter.printHelp("ojaiimport", options);
+            formatter.printHelp("ojaiimport [options] '/hdfs/path/to/table'", options);
             System.exit(0);
         }
         if (line.hasOption("file")) {
