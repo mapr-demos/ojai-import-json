@@ -1,26 +1,16 @@
 package com.mapr.db.importer;
 
-
-
 import java.io.File;
 import java.io.IOException;
-import java.util.Vector;
-import org.apache.commons.cli.CommandLine;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonToken;
-import org.codehaus.jackson.map.JsonMappingException;
 
-import com.mapr.db.Condition;
-import com.mapr.db.MapRDB;
-import com.mapr.db.DBDocument;
-import com.mapr.db.ojai.DBDocumentBuilder;
-import com.mapr.db.Mutation;
-import com.mapr.db.Table;
-import com.mapr.db.exceptions.DocumentExistsException;
-import org.ojai.DocumentStream;
+import org.apache.commons.cli.CommandLine;
 import org.ojai.DocumentBuilder;
+
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.mapr.db.MapRDB;
 
 public class streamParser {
 
@@ -39,29 +29,39 @@ public class streamParser {
             }
 
             DocumentBuilder b = MapRDB.newDocumentBuilder();
-            boolean inArray = false;
+            //boolean inArray = false;
 
             while (jParser.nextToken() != null) {
+                String fieldName = jParser.getCurrentName();
 
                 switch (jParser.getCurrentToken()) {
                 case END_ARRAY:
                     depth--;
                     b.endArray();
-                    inArray = false;
+                    // inArray = false; // incorrect to assume that inArray is false
                     break;
                 case END_OBJECT:
+                    b.endMap();
                     depth--;
                     if (depth == 0) {
                         System.out.println(b.getDocument().asJsonString());
                     }
-                    b = MapRDB.newDocumentBuilder();
                     break;
                 case START_ARRAY:
+                    if (fieldName == null) {
+                        b.addNewArray();
+                    } else {
+                        b.putNewArray(fieldName);
+                    }
                     depth++;
-                    b.addNewArray();
-                    inArray = true;
+                    //inArray = true;
                     break;
                 case START_OBJECT:
+                    if (fieldName == null) {
+                        b.addNewMap();
+                    } else {
+                        b.putNewMap(fieldName);
+                    }
                     depth++;
                     break;
 
@@ -72,42 +72,43 @@ public class streamParser {
                     break;
 // These actually add things to the arr or object
                 case VALUE_NULL:
-                    if (!inArray) {
-                        b.putNull(jParser.getCurrentName());
+                    if (fieldName != null) {
+                        b.putNull(fieldName);
+                    } else {
+                        b.addNull();
                     }
                     break;
                 case VALUE_NUMBER_FLOAT:
-                    if (!inArray) {
-                        b.put(jParser.getCurrentName(), jParser.getFloatValue());
+                  if (fieldName != null) {
+                        b.put(fieldName, jParser.getDoubleValue());
                     } else {
-                        b.add(jParser.getFloatValue());
+                        b.add(jParser.getDoubleValue());
                     }
                     break;
                 case VALUE_NUMBER_INT:
-                    if (!inArray) {
-                        b.put(jParser.getCurrentName(), jParser.getIntValue());
+                    if (fieldName != null) {
+                        b.put(fieldName, jParser.getLongValue());
                     } else {
-                        b.add(jParser.getIntValue());
+                        b.add(jParser.getLongValue());
                     }
                     break;
                 case VALUE_STRING:
-                    if (!inArray) {
-                        b.put(jParser.getCurrentName(), jParser.getText());
+                    if (fieldName != null) {
+                        b.put(fieldName, jParser.getText());
                     } else {
                         b.add(jParser.getText());
                     }
                     break;
                 case VALUE_FALSE:
                 case VALUE_TRUE:
-                    if (!inArray) {
-                        b.put(jParser.getCurrentName(), jParser.getBooleanValue());
+                    if (fieldName != null) {
+                        b.put(fieldName, jParser.getBooleanValue());
                     } else {
                         b.add(jParser.getBooleanValue());
                     }
                     break;
                 }
-                String fieldname = jParser.getCurrentName();
-                System.out.println("["+depth+"]   " + jParser.getCurrentToken().toString() + ": "+ fieldname); // display mkyong
+                System.out.println("["+depth+"]   " + jParser.getCurrentToken().toString() + ": "+ fieldName); // display mkyong
 
             }
             jParser.close();
