@@ -43,6 +43,9 @@ public class streamParser {
                 case END_OBJECT:
                     b.endMap();
                     depth--;
+// When the depth reaches zero on an end of object, this means we
+// have constructed a complete JSON object in the DocumentBuilder.
+// At this point, we can call insert() or insertandreplace()
                     if (depth == 0) {
                         System.out.println(b.getDocument().asJsonString());
                     }
@@ -70,7 +73,8 @@ public class streamParser {
                 case NOT_AVAILABLE:
                 case VALUE_EMBEDDED_OBJECT:
                     break;
-// These actually add things to the arr or object
+
+// These actually add things to the array or object
                 case VALUE_NULL:
                     if (fieldName != null) {
                         b.putNull(fieldName);
@@ -108,7 +112,7 @@ public class streamParser {
                     }
                     break;
                 }
-                System.out.println("["+depth+"]   " + jParser.getCurrentToken().toString() + ": "+ fieldName); // display mkyong
+//              System.out.println("["+depth+"]   " + jParser.getCurrentToken().toString() + ": "+ fieldName); // display mkyong
 
             }
             jParser.close();
@@ -124,6 +128,9 @@ public class streamParser {
     }
 
 }
+
+// These are all the token types that the Jackson JSON parser returns
+
 // JsonToken.END_ARRAY
 // JsonToken.END_OBJECT
 // JsonToken.FIELD_NAME
