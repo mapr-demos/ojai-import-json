@@ -41,7 +41,6 @@ public class streamParser {
             }
             Table table = MapRDB.getTable(remainingArguments[0]); // get the table
             DocumentBuilder b = MapRDB.newDocumentBuilder();
-            //boolean inArray = false;
 
             while (jParser.nextToken() != null) {
                 String fieldName = jParser.getCurrentName();
@@ -50,7 +49,6 @@ public class streamParser {
                 case END_ARRAY:
                     depth--;
                     b.endArray();
-                    // inArray = false; // incorrect to assume that inArray is false
                     break;
                 case END_OBJECT:
                     b.endMap();
@@ -74,7 +72,6 @@ public class streamParser {
                         b.putNewArray(fieldName);
                     }
                     depth++;
-                    //inArray = true;
                     break;
                 case START_OBJECT:
                     if (fieldName == null) {
